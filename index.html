@@ -23,6 +23,9 @@
 
     <!-- Custom styles for this template -->
     <link href="css/freelancer.min.css" rel="stylesheet">
+	
+	<!-- Add favicon -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
 
   </head>
 
@@ -63,10 +66,7 @@
 
     <!-- Portfolio Grid Section -->
     <section class="portfolio" id="portfolio">
-        <h2 class="text-center text-uppercase text-secondary mb-0">Portfolio</h2>
-        <hr class="star-dark mb-5">
-        <h3 class="text-center text-uppercase text-secondary mb-0">(Coming soon!)</h3>
-      <!-- <div class="container">
+      <div class="container">
         <h2 class="text-center text-uppercase text-secondary mb-0">Portfolio</h2>
         <hr class="star-dark mb-5">
         <div class="row">
@@ -87,7 +87,7 @@
                   <i class="fa fa-search-plus fa-3x"></i>
                 </div>
               </div>
-              <img class="img-fluid" src="img/portfolio/cake.png" alt="">
+              <img class="img-fluid" src="img/portfolio/abp.png" alt="">
             </a>
           </div>
           <div class="col-md-6 col-lg-4">
@@ -97,7 +97,7 @@
                   <i class="fa fa-search-plus fa-3x"></i>
                 </div>
               </div>
-              <img class="img-fluid" src="img/portfolio/circus.png" alt="">
+              <img class="img-fluid" src="img/portfolio/telescope.png" alt="">
             </a>
           </div>
           <div class="col-md-6 col-lg-4">
@@ -107,7 +107,7 @@
                   <i class="fa fa-search-plus fa-3x"></i>
                 </div>
               </div>
-              <img class="img-fluid" src="img/portfolio/game.png" alt="">
+              <img class="img-fluid" src="img/portfolio/siscape.png" alt="">
             </a>
           </div>
           <div class="col-md-6 col-lg-4">
@@ -117,7 +117,7 @@
                   <i class="fa fa-search-plus fa-3x"></i>
                 </div>
               </div>
-              <img class="img-fluid" src="img/portfolio/safe.png" alt="">
+              <img class="img-fluid" src="img/portfolio/ficha.png" alt="">
             </a>
           </div>
           <div class="col-md-6 col-lg-4">
@@ -127,11 +127,11 @@
                   <i class="fa fa-search-plus fa-3x"></i>
                 </div>
               </div>
-              <img class="img-fluid" src="img/portfolio/submarine.png" alt="">
+              <img class="img-fluid" src="img/portfolio/fast.png" alt="">
             </a>
           </div>
         </div>
-      </div> -->
+      </div>
     </section>
 
     <!-- About Section -->
@@ -237,12 +237,45 @@
         </a>
         <div class="container text-center">
           <div class="row">
-            <div class="col-lg-8 mx-auto">
+            <div class="col-lg-10 mx-auto">
               <h2 class="text-secondary text-uppercase mb-0">Adventures of Dude in the Top Down World</h2>
               <hr class="star-dark mb-5">
-              <img class="img-fluid mb-5" src="img/portfolio/dude.png" alt="">
-              <p class="mb-12">A game developed in Python using the PyGame lib, as part of my final paper, wich can be read <a href="https://drive.google.com/file/d/1I5z3HOLHog_pkrKVigyqMuvclfgOK7xI/view?usp=sharing" target="_blank">here</a>.</a></p>
-              <p class="mb-5">The game consists on a top-down shooter experience and its main feature is the use of a Genetic Algorithm as artificial intelligence for the NPCs. The project is now open source available <a href="https://github.com/diguifi/Dude-TopDown" target="_blank">here</a>.</p>
+
+              <div id="carousel_modal" class="carousel slide" data-ride="carousel">
+
+                <!-- Indicators -->
+                <ul class="carousel-indicators">
+                  <li data-target="#carousel_modal" data-slide-to="0" class="active"></li>
+                  <li data-target="#carousel_modal" data-slide-to="1"></li>
+                </ul>
+                
+                <!-- The slideshow -->
+                <div class="carousel-inner">
+                  <div class="carousel-item active">
+                    <img src="img/portfolio/dude2.png" alt="Print 1" width="940" height="565">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="img/portfolio/dude3.png" alt="Print 2" width="940" height="565">
+                  </div>
+                </div>
+                
+                <!-- Left and right controls -->
+                <a class="carousel-control-prev" href="#carousel_modal" data-slide="prev">
+                  <img src="img/icons/back.png" alt="previous" width="64" height="64"></img>
+                </a>
+                <a class="carousel-control-next" href="#carousel_modal" data-slide="next">
+                  <img src="img/icons/forward.png" alt="previous" width="64" height="64"></img>
+                </a>
+              </div>
+              
+              <p class="mb-12 pt-4"><strong class="h5">A game developed in Python</strong></p>
+              <p>Using the PyGame lib, this game was part of my final paper, wich can be read <a href="https://drive.google.com/file/d/1I5z3HOLHog_pkrKVigyqMuvclfgOK7xI/view?usp=sharing" target="_blank">here</a>.</p>
+              <p class="mb-5">The game consists on a top-down shooter experience and its main feature is the use of a <strong>Genetic Algorithm</strong> as artificial intelligence for the NPCs. The project is now open source available <a href="https://github.com/diguifi/Dude-TopDown" target="_blank">here</a>.</p>
+              <h4>Technologies used</h4>
+                <p class="mb-5">
+                  <a class="tecnology-font" href="https://www.python.org/" target="_blank">Python</a>,&nbsp;
+                  <a class="tecnology-font" href="https://www.pygame.org/news" target="_blank">PyGame</a>.
+                </p>
               <a class="btn btn-primary btn-lg rounded-pill portfolio-modal-dismiss" href="#">
                 <i class="fa fa-close"></i>
                 Close.</a>
@@ -260,14 +293,62 @@
         </a>
         <div class="container text-center">
           <div class="row">
-            <div class="col-lg-8 mx-auto">
-              <h2 class="text-secondary text-uppercase mb-0">Project Name</h2>
+            <div class="col-lg-10 mx-auto">
+              <h2 class="text-secondary text-uppercase mb-0">Store Manager</h2>
               <hr class="star-dark mb-5">
-              <img class="img-fluid mb-5" src="img/portfolio/cake.png" alt="">
-              <p class="mb-5">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia neque assumenda ipsam nihil, molestias magnam, recusandae quos quis inventore quisquam velit asperiores, vitae? Reprehenderit soluta, eos quod consequuntur itaque. Nam.</p>
+
+              <div id="carousel_modal" class="carousel slide" data-ride="carousel">
+
+                <!-- Indicators -->
+                <ul class="carousel-indicators">
+                  <li data-target="#carousel_modal" data-slide-to="0" class="active"></li>
+                  <li data-target="#carousel_modal" data-slide-to="1"></li>
+                  <li data-target="#carousel_modal" data-slide-to="2"></li>
+                  <li data-target="#carousel_modal" data-slide-to="3"></li>
+                  <li data-target="#carousel_modal" data-slide-to="4"></li>
+                </ul>
+                
+                <!-- The slideshow -->
+                <div class="carousel-inner">
+                  <div class="carousel-item active">
+                    <img src="img/portfolio/abp0.png" alt="Dashboard" width="900" height="650">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="img/portfolio/abp1.png" alt="Manufacturers Menu" width="900" height="650">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="img/portfolio/abp2.png" alt="Products Menu" width="900" height="650">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="img/portfolio/abp3.png" alt="Stock Menu" width="900" height="650">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="img/portfolio/abp4.png" alt="Sales Menu" width="900" height="650">
+                  </div>
+                </div>
+                
+                <!-- Left and right controls -->
+                <a class="carousel-control-prev" href="#carousel_modal" data-slide="prev">
+                  <img src="img/icons/back.png" alt="previous" width="64" height="64"></img>
+                </a>
+                <a class="carousel-control-next" href="#carousel_modal" data-slide="next">
+                  <img src="img/icons/forward.png" alt="previous" width="64" height="64"></img>
+                </a>
+              </div>
+              <p class="mb-12 pt-4"><strong class="h5">A CRUD with related entities</strong></p>
+              <p class="mb-5">This SPA's (Single-Page Application) purpose is basicaly to manage sales and stock of a store, the project's source code can be found <a href="https://github.com/diguifi/CRUDrelatedEntities" target="_blank">here</a>.The system is a SPA  developed with <a href="https://aspnetboilerplate.com/" target="_blank">ASP.NET Boilerplate</a> using ASP.NET MVC 5 (C#, Linq and Entity Framework on the back-end and AngularJs, HTML and CSS on the front-end).</p>
+              <h4>Technologies used</h4>
+                <p class="mb-5">
+                  <a class="tecnology-font" href="https://www.microsoft.com/en-us/download/details.aspx?id=8193" target="_blank">C#</a>,&nbsp;
+                  <a class="tecnology-font" href="https://www.microsoft.com/net/" target="_blank">.NET</a>,&nbsp;
+                  <a class="tecnology-font" href="https://aspnetboilerplate.com/" target="_blank">ABP</a>,&nbsp;
+                  <a class="tecnology-font" href="https://msdn.microsoft.com/en-us/library/ee712906(v=vs.113).aspx" target="_blank">Entity Framework</a>,&nbsp;
+                  <a class="tecnology-font" href="https://pt.wikipedia.org/wiki/HTML5" target="_blank">HTML 5</a>,&nbsp;
+                  <a class="tecnology-font" href="https://angular.io/" target="_blank">AngularJs</a>.
+                </p>
               <a class="btn btn-primary btn-lg rounded-pill portfolio-modal-dismiss" href="#">
                 <i class="fa fa-close"></i>
-                Close Project</a>
+                Close.</a>
             </div>
           </div>
         </div>
@@ -282,14 +363,57 @@
         </a>
         <div class="container text-center">
           <div class="row">
-            <div class="col-lg-8 mx-auto">
-              <h2 class="text-secondary text-uppercase mb-0">Project Name</h2>
+            <div class="col-lg-10 mx-auto">
+              <h2 class="text-secondary text-uppercase mb-0">Star's histogram analysis</h2>
               <hr class="star-dark mb-5">
-              <img class="img-fluid mb-5" src="img/portfolio/circus.png" alt="">
-              <p class="mb-5">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia neque assumenda ipsam nihil, molestias magnam, recusandae quos quis inventore quisquam velit asperiores, vitae? Reprehenderit soluta, eos quod consequuntur itaque. Nam.</p>
+
+              <div id="carousel_modal" class="carousel slide" data-ride="carousel">
+
+                <!-- Indicators -->
+                <ul class="carousel-indicators">
+                  <li data-target="#carousel_modal" data-slide-to="0" class="active"></li>
+                  <li data-target="#carousel_modal" data-slide-to="1"></li>
+                  <li data-target="#carousel_modal" data-slide-to="2"></li>
+                </ul>
+                
+                <!-- The slideshow -->
+                <div class="carousel-inner">
+                  <div class="carousel-item active">
+                    <img src="img/portfolio/telescope1.png" alt="Star localization" width="900" height="650">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="img/portfolio/telescope2.png" alt="Star images and histograms" width="900" height="650">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="img/portfolio/telescope3.png" alt="Final RGB score" width="900" height="650">
+                  </div>
+                </div>
+                
+                <!-- Left and right controls -->
+                <a class="carousel-control-prev" href="#carousel_modal" data-slide="prev">
+                  <img src="img/icons/back.png" alt="previous" width="64" height="64"></img>
+                </a>
+                <a class="carousel-control-next" href="#carousel_modal" data-slide="next">
+                  <img src="img/icons/forward.png" alt="previous" width="64" height="64"></img>
+                </a>
+              </div>
+              
+              <p class="mb-12 pt-4"><strong class="h5">A simple histograms generation and analysis from de "Acrab" star.</strong></p>
+              <p class="mb-5">In physics, the "Redshift" is an astronomical phenomenon wich concept is similar to the Doppler Effect: when a sound is approaching you, its pitch sounds sharper, when it is distancing away from you, its pitch becomes heavier.
+                The same happens with light, when some celestial body move away from your point of view, its Redshift increases. Thats basicaly how hubble researchers found out that the universe is expanding, by analysing an increase in the Redshift of galaxies. More about it <a href="https://en.wikipedia.org/wiki/Redshift#Measurement,_characterization,_and_interpretation" target="_blank">here</a>.
+              </p>
+              <p class="mb-5 pt-1">
+                In this project I gattered images of a star, with a camera and an amateur telescope and then, analysed the histogram of the star to get the red percentage of the Acrab star using Python and OpenCV. This project was a hobby and has no scientific pourpose, but to study and explore our galaxy.
+              </p>
+              <h4>Technologies used</h4>
+                <p class="mb-5">
+                  <a class="tecnology-font" href="https://www.python.org/" target="_blank">Python</a>,&nbsp;
+                  <a class="tecnology-font" href="https://pypi.org/project/opencv-python/" target="_blank">OpenCV</a>,&nbsp;
+                  <a class="tecnology-font" href="https://matplotlib.org/" target="_blank">MatplotLib</a>.
+                </p>
               <a class="btn btn-primary btn-lg rounded-pill portfolio-modal-dismiss" href="#">
                 <i class="fa fa-close"></i>
-                Close Project</a>
+                Close.</a>
             </div>
           </div>
         </div>
@@ -304,14 +428,58 @@
         </a>
         <div class="container text-center">
           <div class="row">
-            <div class="col-lg-8 mx-auto">
-              <h2 class="text-secondary text-uppercase mb-0">Project Name</h2>
+            <div class="col-lg-10 mx-auto">
+              <h2 class="text-secondary text-uppercase mb-0">SISCAPE</h2>
               <hr class="star-dark mb-5">
-              <img class="img-fluid mb-5" src="img/portfolio/game.png" alt="">
-              <p class="mb-5">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia neque assumenda ipsam nihil, molestias magnam, recusandae quos quis inventore quisquam velit asperiores, vitae? Reprehenderit soluta, eos quod consequuntur itaque. Nam.</p>
+
+              <div id="carousel_modal" class="carousel slide col-lg-8 mx-auto" data-ride="carousel">
+
+                <!-- Indicators -->
+                <ul class="carousel-indicators">
+                  <li data-target="#carousel_modal" data-slide-to="0" class="active"></li>
+                  <li data-target="#carousel_modal" data-slide-to="1"></li>
+                  <li data-target="#carousel_modal" data-slide-to="2"></li>
+                  <li data-target="#carousel_modal" data-slide-to="3"></li>
+                </ul>
+                
+                <!-- The slideshow -->
+                <div class="carousel-inner">
+                  <div class="carousel-item active">
+                    <img src="img/portfolio/siscape1.png" alt="Login page" width="900" height="650">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="img/portfolio/siscape2.png" alt="Teacher page" width="900" height="650">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="img/portfolio/siscape3.png" alt="Student page" width="900" height="650">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="img/portfolio/siscape4.png" alt="Student page" width="900" height="650">
+                  </div>
+                </div>
+                
+                <!-- Left and right controls -->
+                <a class="carousel-control-prev" href="#carousel_modal" data-slide="prev">
+                  <img src="img/icons/back.png" alt="previous" width="64" height="64"></img>
+                </a>
+                <a class="carousel-control-next" href="#carousel_modal" data-slide="next">
+                  <img src="img/icons/forward.png" alt="previous" width="64" height="64"></img>
+                </a>
+              </div>
+              
+              <p class="mb-12 pt-4"><strong class="h5">Desktop App for school management.</strong></p>
+              <p class="mb-5">Built as an university project, SISCAPE is a system developed in Java, using the Swing lib and MySQL. Its main pourpose is to facilitate the teacher-student interaction, serving as a sort of "files server"
+                in wich the teacher can select his classes to send files, and the students can access and download these files through a login system.
+              </p>
+              <h4>Technologies used</h4>
+                <p class="mb-5">
+                  <a class="tecnology-font" href="https://java.com/" target="_blank">Java</a>,&nbsp;
+                  <a class="tecnology-font" href="https://pt.wikipedia.org/wiki/Swing_(Java)" target="_blank">Swing</a>,&nbsp;
+                  <a class="tecnology-font" href="https://www.mysql.com/downloads/" target="_blank">MySQL</a>.
+                </p>
               <a class="btn btn-primary btn-lg rounded-pill portfolio-modal-dismiss" href="#">
                 <i class="fa fa-close"></i>
-                Close Project</a>
+                Close.</a>
             </div>
           </div>
         </div>
@@ -326,14 +494,50 @@
         </a>
         <div class="container text-center">
           <div class="row">
-            <div class="col-lg-8 mx-auto">
-              <h2 class="text-secondary text-uppercase mb-0">Project Name</h2>
+            <div class="col-lg-10 mx-auto">
+              <h2 class="text-secondary text-uppercase mb-0">RPG Sheet Application</h2>
               <hr class="star-dark mb-5">
-              <img class="img-fluid mb-5" src="img/portfolio/safe.png" alt="">
-              <p class="mb-5">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia neque assumenda ipsam nihil, molestias magnam, recusandae quos quis inventore quisquam velit asperiores, vitae? Reprehenderit soluta, eos quod consequuntur itaque. Nam.</p>
+
+              <div id="carousel_modal" class="carousel slide col-lg-8 mx-auto" data-ride="carousel">
+
+                <!-- Indicators -->
+                <ul class="carousel-indicators">
+                  <li data-target="#carousel_modal" data-slide-to="0" class="active"></li>
+                  <li data-target="#carousel_modal" data-slide-to="1"></li>
+                </ul>
+                
+                <!-- The slideshow -->
+                <div class="carousel-inner">
+                  <div class="carousel-item active">
+                    <img src="img/portfolio/ficha1.png" alt="Application" width="900" height="650">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="img/portfolio/ficha2.png" alt="Paper version" width="900" height="650">
+                  </div>
+                </div>
+                
+                <!-- Left and right controls -->
+                <a class="carousel-control-prev" href="#carousel_modal" data-slide="prev">
+                  <img src="img/icons/back.png" alt="previous" width="64" height="64"></img>
+                </a>
+                <a class="carousel-control-next" href="#carousel_modal" data-slide="next">
+                  <img src="img/icons/forward.png" alt="previous" width="64" height="64"></img>
+                </a>
+              </div>
+              
+              <p class="mb-12 pt-4"><strong class="h5">An RPG sheet application.</strong></p>
+              <p class="mb-5">Most RPGs (Role Playing Games) demand paper sheets to be played. This can get very annoying when there's no pencil or even when a group wants to play via Skype or Discord (remotely).
+                <br>To solve this issue, while playing with friends I decided to convert the paper sheet into a simple desktop application made with Python and Tkinter. The result came out pretty simple looking, yet very useful and easy to use.
+              </p>
+              <h4>Technologies used</h4>
+                <p class="mb-5">
+                  <a class="tecnology-font" href="https://www.python.org/" target="_blank">Python</a>,&nbsp;
+                  <a class="tecnology-font" href="https://www.python.org/" target="_blank">TKinter</a>,&nbsp;
+                  <a class="tecnology-font" href="http://page.sourceforge.net/#Documentation" target="_blank">PAGE</a>.
+                </p>
               <a class="btn btn-primary btn-lg rounded-pill portfolio-modal-dismiss" href="#">
                 <i class="fa fa-close"></i>
-                Close Project</a>
+                Close.</a>
             </div>
           </div>
         </div>
@@ -349,13 +553,59 @@
         <div class="container text-center">
           <div class="row">
             <div class="col-lg-8 mx-auto">
-              <h2 class="text-secondary text-uppercase mb-0">Project Name</h2>
+              <h2 class="text-secondary text-uppercase mb-0">Fast Thinking <br> <small>(Pensa Rapido)</small></h2>
               <hr class="star-dark mb-5">
-              <img class="img-fluid mb-5" src="img/portfolio/submarine.png" alt="">
-              <p class="mb-5">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia neque assumenda ipsam nihil, molestias magnam, recusandae quos quis inventore quisquam velit asperiores, vitae? Reprehenderit soluta, eos quod consequuntur itaque. Nam.</p>
-              <a class="btn btn-primary btn-lg rounded-pill portfolio-modal-dismiss" href="#">
-                <i class="fa fa-close"></i>
-                Close Project</a>
+
+              <div id="carousel_modal" class="carousel slide" data-ride="carousel">
+
+                <!-- Indicators -->
+                <ul class="carousel-indicators">
+                  <li data-target="#carousel_modal" data-slide-to="0" class="active"></li>
+                  <li data-target="#carousel_modal" data-slide-to="1"></li>
+                  <li data-target="#carousel_modal" data-slide-to="2"></li>
+                  <li data-target="#carousel_modal" data-slide-to="3"></li>
+                </ul>
+                
+                <!-- The slideshow -->
+                <div class="carousel-inner">
+                  <div class="carousel-item active">
+                    <img src="img/portfolio/fast1.png" alt="Main menu" width="900" height="650">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="img/portfolio/fast2.png" alt="Game" width="900" height="650">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="img/portfolio/fast3.png" alt="Game" width="900" height="650">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="img/portfolio/fast4.png" alt="Game" width="900" height="650">
+                  </div>
+                </div>
+                
+                <!-- Left and right controls -->
+                <a class="carousel-control-prev" href="#carousel_modal" data-slide="prev">
+                  <img src="img/icons/back.png" alt="previous" width="64" height="64"></img>
+                </a>
+                <a class="carousel-control-next" href="#carousel_modal" data-slide="next">
+                  <img src="img/icons/forward.png" alt="previous" width="64" height="64"></img>
+                </a>
+              </div>
+              
+              <p class="mb-12 pt-4"><strong class="h5">A simple mobile game.</strong></p>
+              <p>The game consists of basic mathematical expressions, randomly wrong or right. The player has to mark if they are wrong or right,
+                but must do it before a timer runs out. <br>
+                Has main menu with timer speeds (easy, medium, hard) and background color, you can also share you score with friends.
+              </p>
+              <h4>Technologies used</h4>
+                <p class="mb-5">
+                    <a class="tecnology-font" href="http://ai2.appinventor.mit.edu/" target="_blank">AppInventor 2</a>
+                </p>
+                <a class="btn btn-primary btn-lg rounded-pill" href="https://drive.google.com/drive/folders/1L4ffZQw5V72NOLHoa7TpeG90y86RB7d_?usp=sharing" target="_blank">
+                  <i class="fa fa-download"></i> Download APK.
+                </a>
+                <a class="btn btn-primary btn-lg rounded-pill portfolio-modal-dismiss" href="#">
+                  <i class="fa fa-close"></i> Close.
+                </a>
             </div>
           </div>
         </div>
@@ -383,6 +633,16 @@
     font-family: Arial;
     font-weight: bold;
     content: 'k';
-}
+  }
+
+  .carousel-inner img {
+    width: 100%;
+    height: 100%;
+  }
+
+  .tecnology-font{
+    font-size: 130%;
+  }
+  
 </style>
 </html>
