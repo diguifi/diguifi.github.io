@@ -12,6 +12,7 @@ xhttpGet.onreadystatechange = function () {
         let total = (somaNotas / notas.length).toFixed(1);
 
         document.getElementById("ratings").innerHTML = total.toString() + '/5';
+		document.getElementById("total").innerHTML = notas.length.toString();
     }
 };
 
