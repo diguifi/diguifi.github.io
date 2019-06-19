@@ -1,0 +1,34 @@
+title,category,hours
+"C#",Server Languages,3000
+"Python",Server Languages,2050
+"Ruby",Server Languages,20
+"Typescript",Client Languages,1500
+"JavaScript",Client Languages,1350
+"SASS",Client Languages,130
+"CSS",Client Languages,660
+"HTML",Client Languages,860
+"ASP.NET Core",Server Frameworks,1700
+"ASP.NET MVC 5 Boilerplate",Server Frameworks,1300
+"Entity Framework Core",Server Frameworks,1500
+"Entity Framework",Server Frameworks,1100
+"Ruby on Rails",Server Frameworks,20
+"Vue",Client Frameworks,1500
+"AngularJs",Client Frameworks,1000
+"Bootstrap",Client Frameworks,1300
+"Quasar (vue)",Client Frameworks,120
+"Bootstrap Vue",Client Frameworks,1500
+"npm",Package Managers,1500
+"NuGet",Package Managers,1700
+"SQL Server",Databases,200
+"MySQL",Databases,180
+"PostgreSQL",Databases,70
+"Amazon AWS (EC2, ECS, Route53, ECR, CodePipeline)",DevOps,300
+"Docker",DevOps,220
+"Jenkins",DevOps,80
+"IIS",DevOps,530
+"VS Code",Tools,2320
+"Swagger UI",Tools,1500
+"Postman",Tools,250
+"Chrome dev tools",Tools,1000
+"GitHub",Tools,2200
+"Visual Studio",Tools,2900
