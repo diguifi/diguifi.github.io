@@ -15,6 +15,14 @@
       padding: 0;
       height: 100%;
     }
+
+    body.locked {
+      overflow: hidden;
+    }
+
+    body.locked > :not(.unlock-modal) {
+      display: none !important;
+    }
     
     body.curriculo {
       background: linear-gradient(135deg, #327345, #193d3f);
@@ -111,9 +119,82 @@
     canvas {
       width: 100%;
     }
+
+    .unlock-modal {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(8, 16, 18, 0.92);
+      z-index: 2000;
+      padding: 24px;
+    }
+
+    .unlock-modal.hidden {
+      display: none;
+    }
+
+    .unlock-modal-card {
+      width: min(320px, 100%);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+    }
+
+    .unlock-modal-card.shake {
+      animation: shake 0.25s ease-in-out 2;
+    }
+
+    .unlock-input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid #cfd8dc;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .unlock-input:focus {
+      border-color: #0484d1;
+      box-shadow: 0 0 0 3px rgba(4, 132, 209, 0.16);
+    }
+
+    .unlock-submit {
+      border: none;
+      border-radius: 8px;
+      background: #0484d1;
+      color: #fff;
+      padding: 12px 16px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .unlock-submit:hover {
+      background: #193d3f;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
   </style>
 </head>
-<body class="curriculo">
+<body class="curriculo locked">
+  <div class="unlock-modal" id="unlock-modal">
+    <form class="unlock-modal-card" id="unlock-form" autocomplete="off">
+      <input class="unlock-input" id="unlock-input" type="password" />
+      <button class="unlock-submit" type="submit">Submit</button>
+    </form>
+  </div>
   <div class="back-button" id="back">
     <button class="btn-next" onclick="mostrar('curriculo')"><div id="back-text">Voltar</div></button>
   </div>
@@ -402,6 +483,43 @@
       document.getElementById("cu-en").style.display = l == 'en' ? 'block' : 'none'
       game.houses[0].showDialog(game.p.x,game.p.y)
     }
+
+    const unlockForm = document.getElementById('unlock-form')
+    const unlockModal = document.getElementById('unlock-modal')
+    const unlockInput = document.getElementById('unlock-input')
+
+    window.addEventListener('keydown', function (event) {
+      const target = event.target
+      const isEditable = target && (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.tagName === 'SELECT' ||
+        target.tagName === 'BUTTON' ||
+        target.isContentEditable
+      )
+
+      if (document.body.classList.contains('locked') || isEditable) {
+        event.stopPropagation()
+      }
+    }, true)
+
+    unlockForm.addEventListener('submit', function (event) {
+      event.preventDefault()
+
+      if (unlockInput.value === 'recrutador') {
+        unlockModal.classList.add('hidden')
+        document.body.classList.remove('locked')
+        return
+      }
+
+      unlockInput.value = ''
+      unlockForm.classList.remove('shake')
+      void unlockForm.offsetWidth
+      unlockForm.classList.add('shake')
+      unlockInput.focus()
+    })
+
+    unlockInput.focus()
   </script>
 </body>
 </html>
