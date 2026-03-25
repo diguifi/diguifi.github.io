@@ -236,7 +236,7 @@
     <div class="scale-row">Júpiter orbitaria a <span>556 metros</span></div>
     <div class="scale-row">Netuno orbitaria a <span>3,2 km</span></div>
     <div class="scale-row">Próxima Centauri a <span>28.000 km</span></div>
-    <div class="scale-note">Nessa tela, todos os planetas<br>são menores que 1 pixel.</div>
+    <div class="scale-note">Nessa tela, todos os planetas<br>são menores que 1 pixel.<br>Arraste da Terra para lançar foguetes.</div>
   </div>
 
   <div id="realtime-overlay">
@@ -277,6 +277,18 @@
     let realTimeFetchedAt = '';
     let realTimeLastFetchMs = 0;
     let realTimeOverlayOn = false;
+    let canvasEl = null;
+    let rockets = [];
+    let launchDrag = null;
+    let activeLaunchPointerId = null;
+    let panDrag = null;
+    let activePanPointerId = null;
+    let solarBodies = [];
+    let cameraZoom = 1;
+    let cameraOffsetX = 0;
+    let cameraOffsetY = 0;
+    let pinchState = null;
+    const activeTouchPoints = new Map();
 
     const sliderEl    = document.getElementById('speed-slider');
     const speedValEl  = document.getElementById('speed-val');
@@ -327,6 +339,10 @@
         // Deactivate true scale
         trueScaleMode = false;
         btnScale.classList.remove('scale-active');
+        pinchState = null;
+        activeTouchPoints.clear();
+        cancelPanDrag();
+        clearRocketSimulation();
       }
     });
 
@@ -339,6 +355,8 @@
         btnPbd.classList.remove('pbd-active');
         pbdZoom = 1.0;
         setOverlay(pbdOverlay, false);
+      } else {
+        clearRocketSimulation();
       }
     });
 
@@ -352,6 +370,7 @@
           btnPbd.classList.remove('pbd-active');
           pbdZoom = 1.0;
           setOverlay(pbdOverlay, false);
+          clearRocketSimulation();
           await fetchRealTimePositions();
         }
       });
@@ -370,11 +389,25 @@
 
     // True scale: pixels per AU
     let AU_PX = 10;
+    const AU_KM = 149597870;
+    const DAY_SECONDS = 86400;
+    const G_KM = 6.67430e-20;
     const SUN_RADIUS_KM = 696340;
     const SUN_RADIUS_AU = SUN_RADIUS_KM / 149597870;
+    const SUN_MASS_KG = 1.98847e30;
     const MIN_TRUE_SUN_RADIUS_PX = 12;
     const REALTIME_REFRESH_MS = 5 * 60 * 1000;
     const J2000_MS = Date.UTC(2000, 0, 1, 12, 0, 0);
+    const PLANET_RADII_KM = [2440, 6051, 6371, 3390, 69911, 58232, 25362, 24622];
+    const PLANET_MASSES_KG = [
+      3.3011e23, 4.8675e24, 5.97237e24, 6.4171e23,
+      1.8982e27, 5.6834e26, 8.6810e25, 1.02413e26
+    ];
+    const MIN_CAMERA_ZOOM = 0.35;
+    const MAX_CAMERA_ZOOM = 240;
+    const LAUNCH_MIN_DRAG_PX = 18;
+    const LAUNCH_MAX_DRAG_PX = 220;
+    const LAUNCH_HIT_RADIUS_PX = 18;
     const REALTIME_ELEMENTS = [
       { a:0.38709927, e:0.20563593, i:7.00497902, L0:252.25032350, longPeri:77.45779628, node:48.33076593, periodDays:87.9691 },
       { a:0.72333566, e:0.00677672, i:3.39467605, L0:181.97909950, longPeri:131.60246718, node:76.67984255, periodDays:224.70069 },
@@ -387,7 +420,13 @@
     ];
 
     function setup() {
-      createCanvas(windowWidth, windowHeight);
+      canvasEl = createCanvas(windowWidth, windowHeight).elt;
+      canvasEl.style.touchAction = 'none';
+      canvasEl.addEventListener('pointerdown', handleLaunchPointerDown);
+      canvasEl.addEventListener('pointermove', handleLaunchPointerMove);
+      canvasEl.addEventListener('pointerup', handleLaunchPointerUp);
+      canvasEl.addEventListener('pointercancel', handlePointerCancel);
+      canvasEl.addEventListener('wheel', handleWheelZoom, { passive: false });
       generateStars();
       initPlanets();
       generateAsteroids();
@@ -460,6 +499,14 @@
         p.realXAu = null;
         p.realYAu = null;
         p.realZAu = null;
+        p.orbitAu = realAU[i];
+        p.radiusKm = PLANET_RADII_KM[i];
+        p.massKg = PLANET_MASSES_KG[i];
+        p.angularSpeedRadPerSec = TWO_PI / (d.period * DAY_SECONDS);
+        p.worldXKm = 0;
+        p.worldYKm = 0;
+        p.worldVxKmS = 0;
+        p.worldVyKmS = 0;
         p.realTimeOrbitPx = realTimeMinOrbitPx + realTimeOuterIndices.indexOf(i) * realTimeOrbitStep;
 
         // True scale values
@@ -495,6 +542,472 @@
       }
     }
 
+    function canLaunchRockets() {
+      return trueScaleMode && trueScaleT > 0.96 && !pbdMode && !realTimeMode;
+    }
+
+    function getEarthPlanet() {
+      return planets.find(p => p.name === 'Terra') || null;
+    }
+
+    function clearRocketSimulation() {
+      rockets = [];
+      cancelLaunchDrag();
+    }
+
+    function isZoomEnabled() {
+      return !pbdMode;
+    }
+
+    function sceneToScreen(x, y) {
+      if (!isZoomEnabled()) return { x, y };
+      return {
+        x: width / 2 + cameraOffsetX + (x - width / 2) * cameraZoom,
+        y: height / 2 + cameraOffsetY + (y - height / 2) * cameraZoom
+      };
+    }
+
+    function screenToScene(x, y) {
+      if (!isZoomEnabled()) return { x, y };
+      return {
+        x: width / 2 + (x - width / 2 - cameraOffsetX) / cameraZoom,
+        y: height / 2 + (y - height / 2 - cameraOffsetY) / cameraZoom
+      };
+    }
+
+    function applySceneCamera() {
+      if (!isZoomEnabled()) return;
+      translate(width / 2 + cameraOffsetX, height / 2 + cameraOffsetY);
+      scale(cameraZoom);
+      translate(-width / 2, -height / 2);
+    }
+
+    function setCameraAnchor(scenePoint, screenPoint) {
+      cameraOffsetX = screenPoint.x - width / 2 - (scenePoint.x - width / 2) * cameraZoom;
+      cameraOffsetY = screenPoint.y - height / 2 - (scenePoint.y - height / 2) * cameraZoom;
+    }
+
+    function setCameraZoomAt(screenX, screenY, zoomMultiplier) {
+      if (!isZoomEnabled()) return;
+      const scenePoint = screenToScene(screenX, screenY);
+      cameraZoom = constrain(cameraZoom * zoomMultiplier, MIN_CAMERA_ZOOM, MAX_CAMERA_ZOOM);
+      setCameraAnchor(scenePoint, { x: screenX, y: screenY });
+    }
+
+    function beginPinchGesture() {
+      if (!isZoomEnabled() || activeTouchPoints.size < 2) return;
+      const points = Array.from(activeTouchPoints.values());
+      const midpoint = {
+        x: (points[0].x + points[1].x) * 0.5,
+        y: (points[0].y + points[1].y) * 0.5
+      };
+      pinchState = {
+        midpoint,
+        distance: dist(points[0].x, points[0].y, points[1].x, points[1].y)
+      };
+      cancelLaunchDrag();
+      cancelPanDrag();
+    }
+
+    function updatePinchGesture() {
+      if (!pinchState || activeTouchPoints.size < 2 || !isZoomEnabled()) return;
+
+      const points = Array.from(activeTouchPoints.values());
+      const midpoint = {
+        x: (points[0].x + points[1].x) * 0.5,
+        y: (points[0].y + points[1].y) * 0.5
+      };
+      const distanceNow = dist(points[0].x, points[0].y, points[1].x, points[1].y);
+      if (distanceNow <= 0) return;
+
+      const sceneAnchor = screenToScene(pinchState.midpoint.x, pinchState.midpoint.y);
+      cameraZoom = constrain(cameraZoom * (distanceNow / max(pinchState.distance, 1)), MIN_CAMERA_ZOOM, MAX_CAMERA_ZOOM);
+      setCameraAnchor(sceneAnchor, midpoint);
+
+      pinchState.midpoint = midpoint;
+      pinchState.distance = distanceNow;
+    }
+
+    function endPointerGesture(pointerId) {
+      activeTouchPoints.delete(pointerId);
+      if (activeTouchPoints.size < 2) pinchState = null;
+    }
+
+    function handleWheelZoom(event) {
+      if (!isZoomEnabled()) return;
+      const pointer = getCanvasPointerPosition(event);
+      const zoomMultiplier = exp(-event.deltaY * 0.0012);
+      setCameraZoomAt(pointer.x, pointer.y, zoomMultiplier);
+      event.preventDefault();
+    }
+
+    function syncSolarBodies(cx, cy) {
+      solarBodies = [{
+        name: 'Sol',
+        xKm: 0,
+        yKm: 0,
+        vxKmS: 0,
+        vyKmS: 0,
+        massKg: SUN_MASS_KG,
+        radiusKm: SUN_RADIUS_KM,
+        screenX: cx,
+        screenY: cy
+      }];
+
+      planets.forEach(p => {
+        const orbitKm = p.orbitAu * AU_KM;
+        const orbitSpeedKmS = orbitKm * p.angularSpeedRadPerSec;
+
+        p.worldXKm = cos(p.angle) * orbitKm;
+        p.worldYKm = sin(p.angle) * orbitKm;
+        p.worldVxKmS = -sin(p.angle) * orbitSpeedKmS;
+        p.worldVyKmS = cos(p.angle) * orbitSpeedKmS;
+
+        solarBodies.push({
+          name: p.name,
+          xKm: p.worldXKm,
+          yKm: p.worldYKm,
+          vxKmS: p.worldVxKmS,
+          vyKmS: p.worldVyKmS,
+          massKg: p.massKg,
+          radiusKm: p.radiusKm,
+          screenX: p.x,
+          screenY: p.y
+        });
+      });
+    }
+
+    function getLaunchProfile(dragPx) {
+      const power = constrain(map(dragPx, LAUNCH_MIN_DRAG_PX, LAUNCH_MAX_DRAG_PX, 0, 1, true), 0, 1);
+      const burnTimeS = lerp(380, 520, power);
+      const massInitialKg = lerp(420000, 850000, power);
+      const massDryKg = lerp(110000, 190000, power);
+      return {
+        power,
+        thrustN: lerp(7.6e6, 15.2e6, power),
+        burnTimeS,
+        massInitialKg,
+        massDryKg,
+        massFlowKgS: (massInitialKg - massDryKg) / burnTimeS
+      };
+    }
+
+    function getCanvasPointerPosition(event) {
+      if (!canvasEl) return { x: 0, y: 0 };
+      const rect = canvasEl.getBoundingClientRect();
+      return {
+        x: (event.clientX - rect.left) * (width / rect.width),
+        y: (event.clientY - rect.top) * (height / rect.height)
+      };
+    }
+
+    function handleLaunchPointerDown(event) {
+      if (!isZoomEnabled()) return;
+
+      if (event.pointerType === 'touch') {
+        activeTouchPoints.set(event.pointerId, getCanvasPointerPosition(event));
+        if (activeTouchPoints.size >= 2) {
+          beginPinchGesture();
+          event.preventDefault();
+          return;
+        }
+      }
+
+      if (activeLaunchPointerId !== null || activePanPointerId !== null) return;
+
+      const earth = getEarthPlanet();
+      const rawPointer = getCanvasPointerPosition(event);
+      const pointer = screenToScene(rawPointer.x, rawPointer.y);
+      if (earth && canLaunchRockets()) {
+        const hitRadius = max(LAUNCH_HIT_RADIUS_PX, earth.dispRad + 14);
+        if (dist(pointer.x, pointer.y, earth.x, earth.y) <= hitRadius) {
+          activeLaunchPointerId = event.pointerId;
+          launchDrag = { pointerId: event.pointerId, x: pointer.x, y: pointer.y };
+
+          if (canvasEl.setPointerCapture) canvasEl.setPointerCapture(event.pointerId);
+          event.preventDefault();
+          return;
+        }
+      }
+
+      if (activePanPointerId !== null) return;
+      activePanPointerId = event.pointerId;
+      panDrag = {
+        pointerId: event.pointerId,
+        startScreenX: rawPointer.x,
+        startScreenY: rawPointer.y,
+        startOffsetX: cameraOffsetX,
+        startOffsetY: cameraOffsetY
+      };
+
+      if (canvasEl.setPointerCapture) canvasEl.setPointerCapture(event.pointerId);
+      event.preventDefault();
+    }
+
+    function handleLaunchPointerMove(event) {
+      if (event.pointerType === 'touch') {
+        activeTouchPoints.set(event.pointerId, getCanvasPointerPosition(event));
+        if (pinchState || activeTouchPoints.size >= 2) {
+          if (!pinchState) beginPinchGesture();
+          updatePinchGesture();
+          event.preventDefault();
+          return;
+        }
+      }
+
+      const rawPointer = getCanvasPointerPosition(event);
+      if (panDrag && event.pointerId === activePanPointerId) {
+        cameraOffsetX = panDrag.startOffsetX + (rawPointer.x - panDrag.startScreenX);
+        cameraOffsetY = panDrag.startOffsetY + (rawPointer.y - panDrag.startScreenY);
+        event.preventDefault();
+        return;
+      }
+
+      if (!launchDrag || event.pointerId !== activeLaunchPointerId) return;
+      const pointer = screenToScene(rawPointer.x, rawPointer.y);
+      launchDrag.x = pointer.x;
+      launchDrag.y = pointer.y;
+      event.preventDefault();
+    }
+
+    function handleLaunchPointerUp(event) {
+      endPointerGesture(event.pointerId);
+      if (pinchState) {
+        event.preventDefault();
+        return;
+      }
+      if (panDrag && event.pointerId === activePanPointerId) {
+        cancelPanDrag();
+        event.preventDefault();
+        return;
+      }
+      if (!launchDrag || event.pointerId !== activeLaunchPointerId) return;
+
+      const rawPointer = getCanvasPointerPosition(event);
+      const pointer = screenToScene(rawPointer.x, rawPointer.y);
+      const earth = getEarthPlanet();
+      if (earth) launchRocketFromEarth(earth, pointer.x, pointer.y);
+
+      if (canvasEl.releasePointerCapture) {
+        try { canvasEl.releasePointerCapture(event.pointerId); } catch (error) {}
+      }
+      cancelLaunchDrag();
+      event.preventDefault();
+    }
+
+    function handlePointerCancel(event) {
+      endPointerGesture(event.pointerId);
+      if (event.pointerId === activePanPointerId) cancelPanDrag();
+      cancelLaunchDrag();
+    }
+
+    function cancelLaunchDrag() {
+      if (canvasEl && activeLaunchPointerId !== null && canvasEl.releasePointerCapture) {
+        try { canvasEl.releasePointerCapture(activeLaunchPointerId); } catch (error) {}
+      }
+      launchDrag = null;
+      activeLaunchPointerId = null;
+    }
+
+    function cancelPanDrag() {
+      if (canvasEl && activePanPointerId !== null && canvasEl.releasePointerCapture) {
+        try { canvasEl.releasePointerCapture(activePanPointerId); } catch (error) {}
+      }
+      panDrag = null;
+      activePanPointerId = null;
+    }
+
+    function launchRocketFromEarth(earth, pointerX, pointerY) {
+      if (!canLaunchRockets()) return;
+
+      const dx = pointerX - earth.x;
+      const dy = pointerY - earth.y;
+      const dragPx = Math.hypot(dx, dy);
+      if (dragPx < LAUNCH_MIN_DRAG_PX) return;
+
+      const dirX = dx / dragPx;
+      const dirY = dy / dragPx;
+      const profile = getLaunchProfile(dragPx);
+      const startRadiusKm = earth.radiusKm + 120;
+      const startXKm = earth.worldXKm + dirX * startRadiusKm;
+      const startYKm = earth.worldYKm + dirY * startRadiusKm;
+
+      rockets.push({
+        xKm: startXKm,
+        yKm: startYKm,
+        vxKmS: earth.worldVxKmS,
+        vyKmS: earth.worldVyKmS,
+        headingX: dirX,
+        headingY: dirY,
+        massKg: profile.massInitialKg,
+        dryMassKg: profile.massDryKg,
+        massFlowKgS: profile.massFlowKgS,
+        burnRemainingS: profile.burnTimeS,
+        thrustN: profile.thrustN,
+        ageS: 0,
+        trail: [{ xKm: startXKm, yKm: startYKm }],
+        sampleCarryKm: 0,
+        removed: false
+      });
+    }
+
+    function computeRocketAcceleration(rocket) {
+      let ax = 0;
+      let ay = 0;
+
+      solarBodies.forEach(body => {
+        const dx = body.xKm - rocket.xKm;
+        const dy = body.yKm - rocket.yKm;
+        const r2 = dx * dx + dy * dy;
+        if (r2 < 1) return;
+        const r = sqrt(r2);
+        const accel = (G_KM * body.massKg) / r2;
+        ax += (dx / r) * accel;
+        ay += (dy / r) * accel;
+      });
+
+      if (rocket.burnRemainingS > 0 && rocket.massKg > rocket.dryMassKg) {
+        const thrustAccelKmS2 = (rocket.thrustN / rocket.massKg) / 1000;
+        ax += rocket.headingX * thrustAccelKmS2;
+        ay += rocket.headingY * thrustAccelKmS2;
+      }
+
+      return { ax, ay };
+    }
+
+    function stepRocket(rocket, dtS) {
+      let remaining = dtS;
+
+      while (remaining > 0 && !rocket.removed) {
+        const activeDt = rocket.burnRemainingS > 0 ? min(remaining, rocket.burnRemainingS) : remaining;
+        const { ax, ay } = computeRocketAcceleration(rocket);
+
+        rocket.vxKmS += ax * activeDt;
+        rocket.vyKmS += ay * activeDt;
+
+        const prevXKm = rocket.xKm;
+        const prevYKm = rocket.yKm;
+        rocket.xKm += rocket.vxKmS * activeDt;
+        rocket.yKm += rocket.vyKmS * activeDt;
+        rocket.ageS += activeDt;
+
+        rocket.sampleCarryKm += dist(prevXKm, prevYKm, rocket.xKm, rocket.yKm);
+        if (rocket.sampleCarryKm > 300000) {
+          rocket.trail.push({ xKm: rocket.xKm, yKm: rocket.yKm });
+          if (rocket.trail.length > 80) rocket.trail.shift();
+          rocket.sampleCarryKm = 0;
+        }
+
+        if (rocket.burnRemainingS > 0) {
+          rocket.burnRemainingS = max(0, rocket.burnRemainingS - activeDt);
+          rocket.massKg = max(rocket.dryMassKg, rocket.massKg - rocket.massFlowKgS * activeDt);
+        }
+
+        for (const body of solarBodies) {
+          if (dist(rocket.xKm, rocket.yKm, body.xKm, body.yKm) <= body.radiusKm) {
+            rocket.removed = true;
+            break;
+          }
+        }
+
+        if (dist(rocket.xKm, rocket.yKm, 0, 0) > AU_KM * 80 || rocket.ageS > DAY_SECONDS * 365 * 6) {
+          rocket.removed = true;
+        }
+
+        remaining -= activeDt;
+      }
+    }
+
+    function updateRockets(simDtS) {
+      if (!rockets.length) return;
+
+      let remaining = simDtS;
+      while (remaining > 0) {
+        const maxStepS = rockets.some(rocket => rocket.burnRemainingS > 0) ? 300 : 3600;
+        const stepS = min(remaining, maxStepS);
+        rockets.forEach(rocket => {
+          if (!rocket.removed) stepRocket(rocket, stepS);
+        });
+        remaining -= stepS;
+      }
+
+      rockets = rockets.filter(rocket => !rocket.removed);
+    }
+
+    function worldKmToScreen(xKm, yKm, cx, cy) {
+      return {
+        x: cx + (xKm / AU_KM) * AU_PX,
+        y: cy + (yKm / AU_KM) * AU_PX
+      };
+    }
+
+    function drawRockets(cx, cy) {
+      rockets.forEach(rocket => {
+        if (rocket.trail.length > 1) {
+          noFill();
+          stroke(158, 224, 178, 90);
+          strokeWeight(1.1);
+          beginShape();
+          rocket.trail.forEach(point => {
+            const screen = worldKmToScreen(point.xKm, point.yKm, cx, cy);
+            vertex(screen.x, screen.y);
+          });
+          endShape();
+        }
+
+        const screen = worldKmToScreen(rocket.xKm, rocket.yKm, cx, cy);
+        const direction = atan2(rocket.vyKmS, rocket.vxKmS);
+        push();
+        translate(screen.x, screen.y);
+        rotate(direction);
+        noStroke();
+        fill(250, 246, 240, 240);
+        triangle(4, 0, -4, -2.4, -4, 2.4);
+        if (rocket.burnRemainingS > 0) {
+          fill(255, 176, 72, 210);
+          triangle(-4, 0, -10, -1.8, -10, 1.8);
+        }
+        pop();
+      });
+    }
+
+    function drawLaunchGuide() {
+      if (!launchDrag) return;
+
+      const earth = getEarthPlanet();
+      if (!earth) return;
+
+      const dx = launchDrag.x - earth.x;
+      const dy = launchDrag.y - earth.y;
+      const dragPx = Math.hypot(dx, dy);
+      const clampedDragPx = min(dragPx, LAUNCH_MAX_DRAG_PX);
+      const dirX = dragPx > 0 ? dx / dragPx : 1;
+      const dirY = dragPx > 0 ? dy / dragPx : 0;
+      const endX = earth.x + dirX * clampedDragPx;
+      const endY = earth.y + dirY * clampedDragPx;
+      const profile = getLaunchProfile(clampedDragPx);
+
+      stroke(158, 224, 178, 185);
+      strokeWeight(1.4);
+      line(earth.x, earth.y, endX, endY);
+      noStroke();
+      fill(158, 224, 178, 220);
+      ellipse(endX, endY, 6);
+
+      const arrowAngle = atan2(dirY, dirX);
+      const arrowSize = 8;
+      stroke(158, 224, 178, 185);
+      line(endX, endY, endX - cos(arrowAngle - 0.35) * arrowSize, endY - sin(arrowAngle - 0.35) * arrowSize);
+      line(endX, endY, endX - cos(arrowAngle + 0.35) * arrowSize, endY - sin(arrowAngle + 0.35) * arrowSize);
+
+      noStroke();
+      fill(255, 255, 255, 160);
+      textAlign(LEFT);
+      textFont('Space Mono');
+      textSize(9);
+      text(`${(profile.thrustN / 1e6).toFixed(1)} MN - ${round(profile.burnTimeS)} s`, endX + 12, endY - 8);
+    }
+
     // ── draw ──────────────────────────────────────────────────
     function draw() {
       background(4, 7, 16);
@@ -502,6 +1015,7 @@
       const cx = width / 2, cy = height / 2;
       const sc = min(width, height) / 1150;
       const dt = min(deltaTime / 1000, 0.1);
+      const pointerScene = screenToScene(mouseX, mouseY);
 
       // ── Animate mode transitions ──
       if (trueScaleMode) trueScaleT = min(1, trueScaleT + dt * 0.65);
@@ -559,6 +1073,8 @@
       // ── Draw layers ──
       drawStars();
       drawNebulaGlow(cx, cy);
+      push();
+      applySceneCamera();
       if (showOrbits && !pbdMode) {
         if (realTimeMode) drawRealTimeGuides(cx, cy);
         else drawOrbits(cx, cy);
@@ -605,10 +1121,16 @@
           p.y = cy + sin(p.angle) * orbitRadius;
         }
 
-        if (!pbdMode && dist(mouseX, mouseY, p.x, p.y) < max(p.dispRad + 8, 12)) {
+        if (!pbdMode && dist(pointerScene.x, pointerScene.y, p.x, p.y) < max(p.dispRad + 8, 12)) {
           hoveredPlanet = p;
         }
       });
+      syncSolarBodies(cx, cy);
+      if (canLaunchRockets()) {
+        updateRockets(dt * timeScale * DAY_SECONDS);
+      } else {
+        cancelLaunchDrag();
+      }
 
       // ── Render planets ──
       planets.forEach(p => {
@@ -649,13 +1171,19 @@
           text(p.name.toUpperCase(), p.x, p.y - p.dispRad - 9);
         }
       });
+      if (canLaunchRockets()) {
+        drawRockets(cx, cy);
+        drawLaunchGuide();
+      }
+      pop();
 
       // ── PBD Earth indicator ──
       // ── HTML tooltip ──
       if (hoveredPlanet && !pbdMode) {
         const p = hoveredPlanet;
-        tooltipEl.style.left = p.x + 'px';
-        tooltipEl.style.top  = p.y + 'px';
+        const tooltipPos = sceneToScreen(p.x, p.y);
+        tooltipEl.style.left = tooltipPos.x + 'px';
+        tooltipEl.style.top  = tooltipPos.y + 'px';
         ttNameEl.textContent     = p.name;
         ttDotEl.style.background = p.hex;
         ttDataEl.innerHTML = p.facts.map(f => `<div class="tt-row">${f}</div>`).join('');
@@ -918,6 +1446,10 @@
 
     function windowResized() {
       resizeCanvas(windowWidth, windowHeight);
+      clearRocketSimulation();
+      cancelPanDrag();
+      pinchState = null;
+      activeTouchPoints.clear();
       generateStars();
       initPlanets();
       generateAsteroids();
